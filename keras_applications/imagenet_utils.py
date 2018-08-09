@@ -214,6 +214,17 @@ def decode_predictions(preds, top=5):
                          'a batch of predictions '
                          '(i.e. a 2D array of shape (samples, 1000)). '
                          'Found array with shape: ' + str(preds.shape))
+    get_imagenet_class_index()
+    results = []
+    for pred in preds:
+        top_indices = pred.argsort()[-top:][::-1]
+        result = [tuple(CLASS_INDEX[str(i)]) + (pred[i],) for i in top_indices]
+        result.sort(key=lambda x: x[2], reverse=True)
+        results.append(result)
+    return results
+
+def get_imagenet_class_index():
+    global CLASS_INDEX
     if CLASS_INDEX is None:
         fpath = keras_utils.get_file(
             'imagenet_class_index.json',
@@ -222,13 +233,7 @@ def decode_predictions(preds, top=5):
             file_hash='c2c37ea517e94d9795004a39431a14cb')
         with open(fpath) as f:
             CLASS_INDEX = json.load(f)
-    results = []
-    for pred in preds:
-        top_indices = pred.argsort()[-top:][::-1]
-        result = [tuple(CLASS_INDEX[str(i)]) + (pred[i],) for i in top_indices]
-        result.sort(key=lambda x: x[2], reverse=True)
-        results.append(result)
-    return results
+    return CLASS_INDEX
 
 
 def _obtain_input_shape(input_shape,
