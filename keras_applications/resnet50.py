@@ -17,7 +17,6 @@ import warnings
 from . import get_keras_submodule
 
 backend = get_keras_submodule('backend')
-engine = get_keras_submodule('engine')
 layers = get_keras_submodule('layers')
 models = get_keras_submodule('models')
 keras_utils = get_keras_submodule('utils')
@@ -59,16 +58,21 @@ def identity_block(input_tensor, kernel_size, filters, stage, block):
     bn_name_base = 'bn' + str(stage) + block + '_branch'
 
     x = layers.Conv2D(filters1, (1, 1),
+                      kernel_initializer='he_normal',
                       name=conv_name_base + '2a')(input_tensor)
     x = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = layers.Activation('relu')(x)
 
     x = layers.Conv2D(filters2, kernel_size,
-                      padding='same', name=conv_name_base + '2b')(x)
+                      padding='same',
+                      kernel_initializer='he_normal',
+                      name=conv_name_base + '2b')(x)
     x = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
     x = layers.Activation('relu')(x)
 
-    x = layers.Conv2D(filters3, (1, 1), name=conv_name_base + '2c')(x)
+    x = layers.Conv2D(filters3, (1, 1),
+                      kernel_initializer='he_normal',
+                      name=conv_name_base + '2c')(x)
     x = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
 
     x = layers.add([x, input_tensor])
@@ -109,19 +113,24 @@ def conv_block(input_tensor,
     bn_name_base = 'bn' + str(stage) + block + '_branch'
 
     x = layers.Conv2D(filters1, (1, 1), strides=strides,
+                      kernel_initializer='he_normal',
                       name=conv_name_base + '2a')(input_tensor)
     x = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
     x = layers.Activation('relu')(x)
 
     x = layers.Conv2D(filters2, kernel_size, padding='same',
+                      kernel_initializer='he_normal',
                       name=conv_name_base + '2b')(x)
     x = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
     x = layers.Activation('relu')(x)
 
-    x = layers.Conv2D(filters3, (1, 1), name=conv_name_base + '2c')(x)
+    x = layers.Conv2D(filters3, (1, 1),
+                      kernel_initializer='he_normal',
+                      name=conv_name_base + '2c')(x)
     x = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
 
     shortcut = layers.Conv2D(filters3, (1, 1), strides=strides,
+                             kernel_initializer='he_normal',
                              name=conv_name_base + '1')(input_tensor)
     shortcut = layers.BatchNormalization(
         axis=bn_axis, name=bn_name_base + '1')(shortcut)
@@ -193,7 +202,7 @@ def ResNet50(include_top=True,
     # Determine proper input shape
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=224,
-                                      min_size=197,
+                                      min_size=32,
                                       data_format=backend.image_data_format(),
                                       require_flatten=include_top,
                                       weights=weights)
@@ -214,6 +223,7 @@ def ResNet50(include_top=True,
     x = layers.Conv2D(64, (7, 7),
                       strides=(2, 2),
                       padding='valid',
+                      kernel_initializer='he_normal',
                       name='conv1')(x)
     x = layers.BatchNormalization(axis=bn_axis, name='bn_conv1')(x)
     x = layers.Activation('relu')(x)
@@ -240,8 +250,7 @@ def ResNet50(include_top=True,
     x = identity_block(x, 3, [512, 512, 2048], stage=5, block='c')
 
     if include_top:
-        x = layers.AveragePooling2D((7, 7), name='avg_pool')(x)
-        x = layers.Flatten()(x)
+        x = layers.GlobalAveragePooling2D(name='avg_pool')(x)
         x = layers.Dense(classes, activation='softmax', name='fc1000')(x)
     else:
         if pooling == 'avg':
@@ -255,7 +264,7 @@ def ResNet50(include_top=True,
     # Ensure that the model takes into account
     # any potential predecessors of `input_tensor`.
     if input_tensor is not None:
-        inputs = engine.get_source_inputs(input_tensor)
+        inputs = keras_utils.get_source_inputs(input_tensor)
     else:
         inputs = img_input
     # Create model.
