@@ -41,15 +41,16 @@ def _preprocess_numpy_input(x, data_format, mode):
     # Returns
         Preprocessed Numpy array.
     """
+    # print( "Apply preprocessing, data_format: %s, mode: %s on %s" %(data_format, mode, x) )
     if not issubclass(x.dtype.type, np.floating):
         x = x.astype(backend.floatx(), copy=False)
 
-    if mode == 'tf':
+    if mode == 'tf' or mode == 'caffe':
         x /= 127.5
         x -= 1.
         return x
 
-    if mode == 'torch':
+    if mode == 'torch' or mode == 'th':
         x /= 255.
         mean = [0.485, 0.456, 0.406]
         std = [0.229, 0.224, 0.225]
