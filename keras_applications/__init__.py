@@ -9,19 +9,22 @@ _KERAS_ENGINE = None
 _KERAS_LAYERS = None
 _KERAS_MODELS = None
 _KERAS_UTILS = None
+# _KERAS_REGULARIZER = None
 
 
-def set_keras_submodules(backend, engine, layers, models, utils):
+def set_keras_submodules(backend, engine, layers, models, utils ):
     global _KERAS_BACKEND
     global _KERAS_ENGINE
     global _KERAS_LAYERS
     global _KERAS_MODELS
     global _KERAS_UTILS
+    global _KERAS_REGULARIZER
     _KERAS_BACKEND = backend
     _KERAS_ENGINE = engine
     _KERAS_LAYERS = layers
     _KERAS_MODELS = models
     _KERAS_UTILS = utils
+    # _KERAS_REGULARIZER = regularizers
 
 
 def get_keras_submodule(name):
